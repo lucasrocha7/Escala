@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f6b5f">
+<meta name="description" content="Escala de auxiliares - Parque Orlanda">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Escala">
+<script src="config.js"></script>
+<title>Escala de Auxiliares</title>
+<style>
+:root{
+  --bg:#f5f3ee; --card:#fff; --ink:#1c2927; --mute:#667370; --line:#e3dfd4;
+  --accent:#0f6b5f; --accent-ink:#fff; --soft:#e2f0ed; --me:#fff2c9; --me-ink:#6b4e00;
+  --danger:#b3261e; --shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#101819; --card:#182324; --ink:#e7eeed; --mute:#93a3a0; --line:#27363a;
+  --accent:#3bb5a2; --accent-ink:#06201c; --soft:#16302d; --me:#4a3d12; --me-ink:#ffe08a;
+  --danger:#ff8a80; --shadow:none;}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+h1,h2,h3{margin:0}
+.btn{border:0;border-radius:12px;padding:12px 16px;background:var(--accent);color:var(--accent-ink);
+  font-weight:600;cursor:pointer;min-height:44px}
+.btn.sec{background:var(--soft);color:var(--accent)}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid var(--line)}
+.btn:disabled{opacity:.5}
+.field{display:block;margin:0 0 14px}
+.field span{display:block;font-size:13px;color:var(--mute);margin:0 0 4px}
+.field input,.field select{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);
+  background:var(--card);min-height:44px}
+.erro{color:var(--danger);font-size:14px;min-height:20px;margin:0 0 8px}
+
+/* login */
+.login{min-height:100dvh;display:grid;place-items:center;padding:24px 16px}
+.login form{width:100%;max-width:380px;background:var(--card);border-radius:20px;padding:28px 22px;box-shadow:var(--shadow)}
+.login h1{font-size:24px;letter-spacing:-.02em}
+.login .sub{margin:4px 0 22px;color:var(--mute)}
+.login .btn{width:100%}
+
+/* app */
+.topwrap{position:sticky;top:0;z-index:5}
+.top{background:var(--accent);color:var(--accent-ink);
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px}
+.top .tit{flex:1;min-width:0}
+.top b{display:block;font-size:17px;letter-spacing:-.01em}
+.top small{opacity:.85;font-size:13px}
+.top button{background:rgba(255,255,255,.18);color:inherit;border:0;border-radius:10px;width:40px;height:40px;font-size:18px}
+main{padding:14px 14px calc(88px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
+  display:flex;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:6}
+nav button{flex:1;border:0;background:none;padding:8px 2px;border-radius:10px;font-size:12px;color:var(--mute);
+  display:flex;flex-direction:column;align-items:center;gap:2px;min-height:48px}
+nav button i{font-style:normal;font-size:19px;line-height:1}
+nav button.on{color:var(--accent);background:var(--soft);font-weight:600}
+
+.bar{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.bar select{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);min-height:44px;font-weight:600}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;flex:1}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;min-height:40px}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.toggle{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:14px;color:var(--mute)}
+.toggle input{width:20px;height:20px}
+
+.dia{background:var(--card);border-radius:16px;padding:14px;margin:0 0 10px;box-shadow:var(--shadow);
+  display:grid;grid-template-columns:64px 1fr;gap:6px 14px;border:2px solid transparent}
+.dia.prox{border-color:var(--accent)}
+.data{grid-row:span 2;text-align:center;align-self:start}
+.data b{display:block;font-size:30px;line-height:1;letter-spacing:-.03em}
+.data span{display:block;font-size:12px;color:var(--mute);text-transform:uppercase;margin-top:4px}
+.data em{display:inline-block;margin-top:6px;font-style:normal;font-size:11px;font-weight:700;
+  background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:2px 6px}
+.turmas{display:grid;gap:4px}
+.t,.o{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:36px}
+.t label,.o label{font-size:13px;color:var(--mute);flex:none;width:78px}
+.t .v,.o .v{flex:1;text-align:right;font-weight:600}
+.v.eu{background:var(--me);color:var(--me-ink);border-radius:8px;padding:4px 10px;display:inline-block;flex:none}
+.t select,.o select{flex:1;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);min-height:40px;font-weight:600}
+.o{border-top:1px dashed var(--line);padding-top:6px}
+.o .v{font-weight:500;color:var(--accent)}
+.vazio{text-align:center;color:var(--mute);padding:40px 10px}
+.mes-tit{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:14px 2px 8px}
+
+.painel{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin:0 0 12px}
+.painel h2{font-size:18px;margin-bottom:6px}
+.painel p{margin:0 0 12px;color:var(--mute);font-size:14px}
+.lista{list-style:none;margin:0 0 12px;padding:0}
+.lista li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.lista li:last-child{border:0}
+.lista input[type=text]{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);min-height:44px}
+.lista .ic{border:1px solid var(--line);background:var(--card);border-radius:10px;width:40px;height:44px}
+.lista li.off input[type=text]{opacity:.5;text-decoration:line-through}
+.novo{padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);min-height:44px;width:100%}
+.lista .sw{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--mute)}
+.lista .sw input{width:22px;height:22px}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+.usr{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:left}
+.usr:last-child{border-bottom:0}
+.usr .n{flex:1;min-width:0}.usr .n b{display:block}.usr .n small{color:var(--mute)}
+.tag{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;background:var(--soft);color:var(--accent)}
+.tag.off{background:var(--line);color:var(--mute)}
+dialog{border:0;border-radius:20px;padding:20px;width:min(440px,calc(100vw - 24px));background:var(--card);color:var(--ink);box-shadow:0 10px 40px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{margin-bottom:14px;font-size:19px}
+#toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translate(-50%,20px);
+  background:#1c2927;color:#fff;padding:10px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;z-index:20;max-width:90vw;text-align:center;font-size:14px}
+#toast.on{opacity:1;transform:translate(-50%,0)}#toast.err{background:var(--danger);color:#fff}
+.load{opacity:.55;pointer-events:none}
+#off{background:#8a5a00;color:#fff;font-size:13px;padding:8px 16px;line-height:1.35}
+.dica{font-size:14px;color:var(--mute);margin:0 0 12px}
+</style>
+</head>
+<body>
+
+<div id="login" class="login" hidden>
+  <form id="f-login" autocomplete="on">
+    <h1>Escala de Auxiliares</h1>
+    <p class="sub">Jovens e menores · Parque Orlanda</p>
+    <label class="field"><span>Usuário</span><input id="l-user" autocomplete="username" autocapitalize="none" autocorrect="off" required></label>
+    <label class="field"><span>Senha</span><input id="l-pass" type="password" autocomplete="current-password" required></label>
+    <p class="erro" id="l-erro"></p>
+    <button class="btn" id="l-btn">Entrar</button>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <div class="topwrap">
+  <header class="top">
+    <div class="tit"><b>Escala de Auxiliares</b><small id="who"></small></div>
+    <button id="refresh" title="Atualizar" aria-label="Atualizar">↻</button>
+  </header>
+  <div id="off" hidden></div>
+  </div>
+  <main>
+    <section id="v-escala"></section>
+    <section id="v-aux" hidden></section>
+    <section id="v-users" hidden></section>
+    <section id="v-gerar" hidden></section>
+    <section id="v-conta" hidden></section>
+  </main>
+  <nav id="nav"></nav>
+</div>
+
+<dialog id="dlg">
+  <form method="dialog" id="f-user">
+    <h2 id="dlg-t">Usuário</h2>
+    <label class="field"><span>Usuário (login)</span><input id="u-user" autocapitalize="none" autocorrect="off"></label>
+    <label class="field"><span>Nome</span><input id="u-nome"></label>
+    <label class="field"><span>Nível</span>
+      <select id="u-nivel"><option value="usuario">Usuário (só consulta)</option><option value="admin">Administrador (edita tudo)</option></select></label>
+    <label class="field"><span>Auxiliar vinculado (destaca "minha escala")</span><select id="u-aux"></select></label>
+    <label class="field"><span id="u-senha-l">Senha</span><input id="u-senha" type="text" autocomplete="off" autocapitalize="none"></label>
+    <label class="toggle"><input type="checkbox" id="u-ativo"> Usuário ativo</label>
+    <p class="erro" id="u-erro"></p>
+    <div class="row"><button type="button" class="btn sec" id="u-cancel">Cancelar</button><button type="button" class="btn" id="u-save">Salvar</button></div>
+  </form>
+</dialog>
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MES3 = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hojeIso = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+
+let token = store.get('escala_token');
+const S = { offline:false, cacheQuando:0, usuario:null, escala:[], auxiliares:[], ano:null, mes:null, soMinhas:false, tab:'escala',
+            adm:{ aux:[], usuarios:[] }, editando:null };
+const isAdmin = () => S.usuario && S.usuario.nivel === 'admin';
+const podeEditar = () => isAdmin() && !S.offline;
+
+/* ---------- chamada ao servidor ---------- */
+const API_URL = String(window.ESCALA_API_URL || '').trim();
+async function api(fn, ...args){
+  if (!API_URL || API_URL.indexOf('COLE_AQUI') >= 0) throw new Error('Falta configurar a URL do servidor no arquivo config.js.');
+  let resp;
+  try {
+    // text/plain evita o "preflight" do navegador, que o Apps Script não responde
+    resp = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ fn, args }) });
+  } catch(e){ const err = new Error('Sem conexão com o servidor.'); err.offline = true; throw err; }
+  let r;
+  try { r = await resp.json(); }
+  catch(e){ throw new Error('Resposta inválida do servidor. Confira a URL e se a implantação permite acesso a "Qualquer pessoa".'); }
+  if (r && r.ok) return r;
+  if (r && r.erro === 'SESSAO_EXPIRADA'){ sair(); throw new Error('Sessão expirada. Entre novamente.'); }
+  throw new Error((r && r.erro) || 'Erro inesperado.');
+}
+let toastT;
+function toast(msg, erro){
+  const t = $('#toast'); t.textContent = msg; t.className = 'on' + (erro ? ' err' : '');
+  clearTimeout(toastT); toastT = setTimeout(() => t.className = '', erro ? 3800 : 1600);
+}
+async function busy(btn, fn){
+  const txt = btn && btn.textContent; if (btn){ btn.disabled = true; }
+  try { return await fn(); } finally { if (btn){ btn.disabled = false; btn.textContent = txt; } }
+}
+
+/* ---------- login / sessão ---------- */
+$('#f-login').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  $('#l-erro').textContent = '';
+  const btn = $('#l-btn'); btn.disabled = true; btn.textContent = 'Entrando…';
+  try {
+    const r = await api('login', $('#l-user').value, $('#l-pass').value);
+    token = r.token; store.set('escala_token', token); $('#l-pass').value = '';
+    await iniciar();
+  } catch(e){ $('#l-erro').textContent = e.message; }
+  finally { btn.disabled = false; btn.textContent = 'Entrar'; }
+});
+function sair(){
+  const t = token; token = null;
+  if (t) api('logout', t).catch(() => {});
+  store.del('escala_token'); store.del('escala_cache'); S.usuario = null;
+  $('#app').hidden = true; $('#login').hidden = false;
+}
+let ultimaCarga = 0;
+function lerCache(){ try { return JSON.parse(store.get('escala_cache')); } catch(e){ return null; } }
+async function recarregar(){
+  try {
+    const r = await api('carregar', token);
+    S.usuario = r.usuario; S.escala = r.escala; S.auxiliares = r.auxiliares; S.offline = false;
+    store.set('escala_cache', JSON.stringify({ quando: Date.now(), usuario: r.usuario, escala: r.escala, auxiliares: r.auxiliares }));
+  } catch(e){
+    const c = e.offline ? lerCache() : null;
+    if (!c) throw e;
+    S.usuario = c.usuario; S.escala = c.escala; S.auxiliares = c.auxiliares; S.offline = true; S.cacheQuando = c.quando;
+    return;
+  }
+  ultimaCarga = Date.now();
+  if (isAdmin()){ const a = await api('adminDados', token); S.adm.aux = a.auxiliares; S.adm.usuarios = a.usuarios; }
+}
+function atualizarBanner(){
+  const b = $('#off'); b.hidden = !S.offline;
+  if (!S.offline) return;
+  const d = new Date(S.cacheQuando);
+  b.textContent = 'Sem internet. Mostrando a escala salva em ' + d.toLocaleDateString('pt-BR') + ' às ' +
+    d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) + (isAdmin() ? '. Edição indisponível.' : '.');
+}
+window.addEventListener('online', () => { if (S.offline && token) recarregar().then(renderTudo).catch(() => {}); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !token || !S.usuario || S.tab !== 'escala') return;
+  if (Date.now() - ultimaCarga < 60000 || $('#dlg').open) return;
+  recarregar().then(renderTudo).catch(() => {});
+});
+async function iniciar(){
+  try { await recarregar(); }
+  catch(e){ $('#login').hidden = false; $('#app').hidden = true; if (token) $('#l-erro').textContent = e.message; return; }
+  $('#login').hidden = true; $('#app').hidden = false;
+  $('#who').textContent = S.usuario.nome + (isAdmin() ? ' · admin' : '');
+  S.tab = 'escala'; renderNav(); renderTudo();
+}
+$('#refresh').onclick = async () => { try { await recarregar(); renderTudo(); toast(S.offline ? 'Continua sem internet' : 'Atualizado', S.offline); } catch(e){ toast(e.message, true); } };
+
+/* ---------- navegação ---------- */
+function renderNav(){
+  const abas = [['escala','📅','Escala']];
+  if (isAdmin()) abas.push(['aux','👥','Auxiliares'],['users','🔑','Usuários'],['gerar','🔄','Ano novo']);
+  abas.push(['conta','⚙️','Conta']);
+  $('#nav').innerHTML = abas.map(([k,i,t]) => `<button data-tab="${k}" class="${S.tab===k?'on':''}"><i>${i}</i>${t}</button>`).join('');
+}
+$('#nav').addEventListener('click', ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  S.tab = b.dataset.tab; renderNav(); renderTudo(); window.scrollTo(0,0);
+});
+function renderTudo(){
+  atualizarBanner();
+  ['escala','aux','users','gerar','conta'].forEach(k => $('#v-'+k).hidden = S.tab !== k);
+  if (S.offline && ['aux','users','gerar'].includes(S.tab)){ $('#v-'+S.tab).innerHTML = '<p class="vazio">Disponível apenas com internet.</p>'; return; }
+  ({escala:renderEscala, aux:renderAux, users:renderUsers, gerar:renderGerar, conta:renderConta})[S.tab]();
+}
+
+/* ---------- ESCALA ---------- */
+function opts(atual, lista){
+  const l = (!atual || lista.includes(atual)) ? lista : [atual, ...lista];
+  return '<option value="">—</option>' + l.map(n => `<option ${n===atual?'selected':''}>${esc(n)}</option>`).join('');
+}
+function cardDia(r, meu, prox, comMes){
+  const [y,m,d] = r.data.split('-').map(Number);
+  const cel = (campo, rot) => {
+    const v = r[campo];
+    if (podeEditar()) return `<div class="t"><label>${rot}</label><select class="cel" data-data="${r.data}" data-campo="${campo}">${opts(v, S.auxiliares)}</select></div>`;
+    return `<div class="t"><label>${rot}</label><span class="v ${meu && v===meu ? 'eu':''}">${esc(v) || '—'}</span></div>`;
+  };
+  const orac = podeEditar()
+    ? `<select class="cel" data-data="${r.data}" data-campo="oracao">${['Irmãos','Irmãs'].map(o=>`<option ${o===r.oracao?'selected':''}>${o}</option>`).join('')}</select>`
+    : `<span class="v">${esc(r.oracao)}</span>`;
+  return `<article class="dia ${prox?'prox':''}">
+    <div class="data"><b>${String(d).padStart(2,'0')}</b><span>${MES3[m-1]}</span>${prox?'<em>PRÓXIMO</em>':''}</div>
+    <div class="turmas">${cel('t1','1ª Turma')}${cel('t2','2ª Turma')}${cel('t3','3ª Turma')}</div>
+    <div class="o" style="grid-column:2"><label>Oração</label>${orac}</div>
+  </article>`;
+}
+function renderEscala(){
+  const el = $('#v-escala'), hoje = hojeIso();
+  const anos = [...new Set(S.escala.map(r => +r.data.slice(0,4)))].sort((a,b)=>a-b);
+  if (!anos.length){
+    el.innerHTML = '<p class="vazio">Nenhuma escala cadastrada ainda.' + (isAdmin() ? '<br>Use a aba “Ano novo” para gerar.' : '') + '</p>'; return;
+  }
+  if (!anos.includes(S.ano)) S.ano = anos.includes(+hoje.slice(0,4)) ? +hoje.slice(0,4) : anos[anos.length-1];
+  const doAno = S.escala.filter(r => +r.data.slice(0,4) === S.ano);
+  const meses = [...new Set(doAno.map(r => +r.data.slice(5,7)))];
+  if (!meses.includes(S.mes)) S.mes = (+hoje.slice(0,4) === S.ano && meses.includes(+hoje.slice(5,7))) ? +hoje.slice(5,7) : meses[0];
+  const meu = S.usuario.auxiliar;
+  const prox = (S.escala.find(r => r.data >= hoje) || {}).data;
+
+  let html = `<div class="bar"><select id="sel-ano">${anos.map(a=>`<option ${a===S.ano?'selected':''}>${a}</option>`).join('')}</select>`;
+  if (!S.soMinhas) html += `<div class="chips">${meses.map(m=>`<button class="chip ${m===S.mes?'on':''}" data-mes="${m}">${MESES[m-1].slice(0,3)}</button>`).join('')}</div>`;
+  html += '</div>';
+  if (meu) html += `<label class="toggle"><input type="checkbox" id="so-minhas" ${S.soMinhas?'checked':''}> Mostrar só os dias em que ${esc(meu)} está escalado</label>`;
+
+  if (S.soMinhas){
+    const mine = doAno.filter(r => [r.t1,r.t2,r.t3].includes(meu));
+    html += mine.length ? mine.map(r => cardDia(r, meu, r.data===prox)).join('') : '<p class="vazio">Nenhum dia encontrado neste ano.</p>';
+  } else {
+    html += `<h3 class="mes-tit">${MESES[S.mes-1]} ${S.ano}</h3>` +
+      doAno.filter(r => +r.data.slice(5,7) === S.mes).map(r => cardDia(r, meu, r.data===prox)).join('');
+  }
+  el.innerHTML = html;
+}
+$('#v-escala').addEventListener('click', ev => {
+  const c = ev.target.closest('.chip'); if (c){ S.mes = +c.dataset.mes; renderEscala(); }
+});
+$('#v-escala').addEventListener('change', async ev => {
+  const s = ev.target;
+  if (s.id === 'sel-ano'){ S.ano = +s.value; renderEscala(); return; }
+  if (s.id === 'so-minhas'){ S.soMinhas = s.checked; renderEscala(); return; }
+  if (!s.classList.contains('cel')) return;
+  const { data, campo } = s.dataset, linha = S.escala.find(r => r.data === data), antigo = linha[campo], novo = s.value;
+  if (campo !== 'oracao' && novo && ['t1','t2','t3'].some(c => c !== campo && linha[c] === novo)
+      && !confirm(novo + ' já está escalado neste mesmo dia. Salvar mesmo assim?')){ s.value = antigo; return; }
+  s.disabled = true;
+  try { await api('salvarDesignacao', token, data, campo, novo); linha[campo] = novo; toast('Salvo ✓'); renderEscala(); }
+  catch(e){ s.value = antigo; s.disabled = false; toast(e.message, true); }
+});
+
+/* ---------- AUXILIARES (admin) ---------- */
+function renderAux(){
+  const L = S.adm.aux;
+  $('#v-aux').innerHTML = `<div class="painel"><h2>Fila do rodízio</h2>
+    <p>A ordem desta lista é a fila usada para gerar a escala. Use as setas para mudar a ordem. Desative quem sair (o histórico é mantido).</p>
+    <ul class="lista">${L.map((a,i)=>`<li class="${a.ativo?'':'off'}" data-i="${i}">
+      <button class="ic" data-act="up" ${i===0?'disabled':''} aria-label="Subir">↑</button>
+      <button class="ic" data-act="down" ${i===L.length-1?'disabled':''} aria-label="Descer">↓</button>
+      <input type="text" value="${esc(a.nome)}" data-act="nome">
+      <label class="sw"><input type="checkbox" data-act="ativo" ${a.ativo?'checked':''}>ativo</label></li>`).join('')}</ul>
+    <div class="row"><input id="aux-novo" class="novo" placeholder="Novo auxiliar">
+      <button class="btn sec" id="aux-add" style="flex:none">Adicionar</button></div></div>
+    <button class="btn" id="aux-save" style="width:100%">Salvar fila</button>`;
+}
+$('#v-aux').addEventListener('click', async ev => {
+  const L = S.adm.aux, b = ev.target.closest('button'); if (!b) return;
+  const li = b.closest('li'), i = li ? +li.dataset.i : -1;
+  if (b.dataset.act === 'up' && i > 0){ [L[i-1], L[i]] = [L[i], L[i-1]]; renderAux(); }
+  else if (b.dataset.act === 'down' && i < L.length-1){ [L[i+1], L[i]] = [L[i], L[i+1]]; renderAux(); }
+  else if (b.id === 'aux-add'){
+    const n = $('#aux-novo').value.trim(); if (!n) return;
+    L.push({ orig:'', nome:n, ativo:true }); renderAux();
+  } else if (b.id === 'aux-save'){
+    await busy(b, async () => {
+      try { await api('salvarAuxiliares', token, L); await recarregar(); renderAux(); toast('Fila salva ✓'); }
+      catch(e){ toast(e.message, true); }
+    });
+  }
+});
+$('#v-aux').addEventListener('input', ev => {
+  const t = ev.target, li = t.closest('li'); if (!li) return;
+  const a = S.adm.aux[+li.dataset.i];
+  if (t.dataset.act === 'nome') a.nome = t.value;
+  if (t.dataset.act === 'ativo'){ a.ativo = t.checked; li.classList.toggle('off', !t.checked); }
+});
+
+/* ---------- USUÁRIOS (admin) ---------- */
+function renderUsers(){
+  $('#v-users').innerHTML = `<div class="painel"><h2>Usuários</h2>
+    <p>Toque em um usuário para editar, redefinir a senha ou desativar.</p>
+    ${S.adm.usuarios.map(u=>`<button class="usr" data-u="${esc(u.usuario)}"><div class="n"><b>${esc(u.nome)}</b><small>${esc(u.usuario)}${u.auxiliar?' · '+esc(u.auxiliar):''}</small></div>
+      <span class="tag">${u.nivel==='admin'?'ADMIN':'USUÁRIO'}</span>${u.ativo?'':'<span class="tag off">INATIVO</span>'}</button>`).join('')}
+  </div><button class="btn" id="u-novo" style="width:100%">+ Novo usuário</button>`;
+}
+function abrirUsuario(u){
+  S.editando = u ? u.usuario : null;
+  $('#dlg-t').textContent = u ? 'Editar usuário' : 'Novo usuário';
+  $('#u-user').value = u ? u.usuario : ''; $('#u-user').disabled = !!u;
+  $('#u-nome').value = u ? u.nome : '';
+  $('#u-nivel').value = u ? u.nivel : 'usuario';
+  $('#u-aux').innerHTML = '<option value="">(nenhum)</option>' + S.adm.aux.map(a=>`<option ${u&&u.auxiliar===a.orig?'selected':''}>${esc(a.orig||a.nome)}</option>`).join('');
+  $('#u-senha').value = ''; $('#u-senha-l').textContent = u ? 'Nova senha (deixe vazio para manter)' : 'Senha (mín. 6 caracteres)';
+  $('#u-ativo').checked = u ? u.ativo : true; $('#u-erro').textContent = '';
+  $('#dlg').showModal();
+}
+$('#v-users').addEventListener('click', ev => {
+  if (ev.target.closest('#u-novo')) return abrirUsuario(null);
+  const b = ev.target.closest('.usr'); if (b) abrirUsuario(S.adm.usuarios.find(u => u.usuario === b.dataset.u));
+});
+$('#u-cancel').onclick = () => $('#dlg').close();
+$('#u-save').onclick = async ev => {
+  await busy(ev.target, async () => {
+    try {
+      const r = await api('salvarUsuario', token, {
+        usuario: $('#u-user').value, nome: $('#u-nome').value, nivel: $('#u-nivel').value,
+        auxiliar: $('#u-aux').value, ativo: $('#u-ativo').checked, senha: $('#u-senha').value });
+      S.adm.usuarios = r.usuarios; $('#dlg').close(); renderUsers(); toast('Usuário salvo ✓');
+      if (S.editando === S.usuario.usuario) await recarregar();
+    } catch(e){ $('#u-erro').textContent = e.message; }
+  });
+};
+
+/* ---------- ANO NOVO (admin) ---------- */
+function renderGerar(){
+  const ult = S.escala.length ? +S.escala[S.escala.length-1].data.slice(0,4) : new Date().getFullYear()-1;
+  $('#v-gerar').innerHTML = `<div class="painel"><h2>Gerar rodízio automático</h2>
+    <p>Cria todos os domingos do ano escolhido, continuando a fila de onde o último domingo anterior parou e alternando Irmãos/Irmãs na oração. Depois você pode ajustar qualquer dia na aba Escala.</p>
+    <label class="field"><span>Ano</span><input id="g-ano" type="number" inputmode="numeric" value="${ult+1}" min="2000" max="2100"></label>
+    <button class="btn" id="g-btn" style="width:100%">Gerar escala</button></div>`;
+}
+$('#v-gerar').addEventListener('click', async ev => {
+  const b = ev.target.closest('#g-btn'); if (!b) return;
+  const ano = +$('#g-ano').value;
+  await busy(b, async () => {
+    try {
+      let r = await api('gerarAno', token, ano, false);
+      if (r.precisaConfirmar){
+        if (!confirm(`Já existem ${r.existentes} datas em ${ano}. Substituir tudo (inclusive ajustes manuais)?`)) return;
+        r = await api('gerarAno', token, ano, true);
+      }
+      await recarregar(); S.ano = ano; S.mes = null; S.tab = 'escala'; renderNav(); renderTudo();
+      toast(`Escala ${ano} gerada (${r.geradas} domingos) ✓`);
+    } catch(e){ toast(e.message, true); }
+  });
+});
+
+/* ---------- CONTA ---------- */
+let instalar = null;
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); instalar = e; if (S.tab === 'conta' && S.usuario) renderConta(); });
+function blocoInstalar(){
+  if (standalone()) return '';
+  if (instalar) return '<button class="btn sec" id="c-inst" style="width:100%;margin:0 0 12px">Instalar aplicativo no celular</button>';
+  if (/iphone|ipad|ipod/i.test(navigator.userAgent)) return '<p class="dica">Para instalar no iPhone: toque em Compartilhar (quadrado com seta) e depois em “Adicionar à Tela de Início”.</p>';
+  return '<p class="dica">Para instalar: abra o menu do navegador (⋮) e escolha “Instalar aplicativo” ou “Adicionar à tela inicial”.</p>';
+}
+function renderConta(){
+  $('#v-conta').innerHTML = `<div class="painel"><h2>${esc(S.usuario.nome)}</h2>
+    <p>Usuário: ${esc(S.usuario.usuario)} · ${isAdmin()?'Administrador':'Consulta'}</p>
+    <label class="field"><span>Senha atual</span><input id="c-atual" type="password" autocomplete="current-password"></label>
+    <label class="field"><span>Nova senha (mín. 6 caracteres)</span><input id="c-nova" type="password" autocomplete="new-password"></label>
+    <button class="btn" id="c-save" style="width:100%">Alterar senha</button></div>${blocoInstalar()}
+    <button class="btn danger" id="c-sair" style="width:100%">Sair</button>`;
+}
+$('#v-conta').addEventListener('click', async ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  if (b.id === 'c-sair') return sair();
+  if (b.id === 'c-inst' && instalar){ instalar.prompt(); instalar = null; return renderConta(); }
+  if (b.id === 'c-save') await busy(b, async () => {
+    try { await api('alterarSenha', token, $('#c-atual').value, $('#c-nova').value);
+          $('#c-atual').value = $('#c-nova').value = ''; toast('Senha alterada ✓'); }
+    catch(e){ toast(e.message, true); }
+  });
+});
+
+/* ---------- início ---------- */
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+if (token) iniciar(); else $('#login').hidden = false;
+</script>
+</body>
+</html>
