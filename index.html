@@ -13,6 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Escala">
 <script src="config.js"></script>
+<script src="versao.js"></script>
 <title>Escala de Auxiliares</title>
 <style>
 :root{
@@ -119,6 +120,29 @@ dialog h2{margin-bottom:14px;font-size:19px}
 .load{opacity:.55;pointer-events:none}
 #off{background:#8a5a00;color:#fff;font-size:13px;padding:8px 16px;line-height:1.35}
 .dica{font-size:14px;color:var(--mute);margin:0 0 12px}
+.ok{color:var(--accent);font-size:14px;margin:0 0 8px}.ok:empty{display:none}
+.link{background:none;border:0;color:var(--accent);text-decoration:underline;padding:10px;font-size:14px;width:100%;cursor:pointer}
+.aviso{background:var(--me);color:var(--me-ink);border-radius:10px;padding:10px 12px;font-size:14px;margin:0 0 12px}
+.acoes{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.btn.peq{padding:8px 12px;min-height:40px;font-size:14px}
+.mes-linha{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 2px 8px}
+.mes-linha .mes-tit{margin:0}
+.obs{display:inline-block;font-style:normal;font-size:11px;font-weight:700;background:var(--me);color:var(--me-ink);border-radius:6px;padding:2px 6px}
+.data .obs{margin-top:6px}
+.mais{flex:none;border:1px solid var(--line);background:var(--card);border-radius:10px;width:40px;height:40px;font-size:18px;line-height:1}
+nav button{position:relative}
+.bolha{position:absolute;top:2px;right:calc(50% - 26px);background:var(--danger);color:#fff;border-radius:999px;font-size:10px;min-width:16px;height:16px;line-height:16px;font-style:normal;font-weight:700;padding:0 4px}
+#upd{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:30;background:var(--ink);color:var(--bg);border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.3)}
+#upd span{flex:1}
+.prev-linha{display:grid;grid-template-columns:28px 52px 1fr;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.prev-linha.off{opacity:.45}.prev-linha input{width:22px;height:22px}
+.prev-linha small{color:var(--accent);font-weight:600}
+.cont{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}
+.cont span{background:var(--soft);color:var(--accent);border-radius:8px;padding:4px 8px;font-size:13px;font-weight:600}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.hist li>div{flex:1;min-width:0}.hist small{display:block;color:var(--mute)}
+.hist li.desfeito{opacity:.5}
 </style>
 </head>
 <body>
@@ -130,7 +154,9 @@ dialog h2{margin-bottom:14px;font-size:19px}
     <label class="field"><span>Usuário</span><input id="l-user" autocomplete="username" autocapitalize="none" autocorrect="off" required></label>
     <label class="field"><span>Senha</span><input id="l-pass" type="password" autocomplete="current-password" required></label>
     <p class="erro" id="l-erro"></p>
+    <p class="ok" id="l-info"></p>
     <button class="btn" id="l-btn">Entrar</button>
+    <button type="button" class="link" id="l-esqueci">Esqueci minha senha</button>
   </form>
 </div>
 
@@ -147,6 +173,7 @@ dialog h2{margin-bottom:14px;font-size:19px}
     <section id="v-aux" hidden></section>
     <section id="v-users" hidden></section>
     <section id="v-gerar" hidden></section>
+    <section id="v-sistema" hidden></section>
     <section id="v-conta" hidden></section>
   </main>
   <nav id="nav"></nav>
@@ -162,10 +189,23 @@ dialog h2{margin-bottom:14px;font-size:19px}
     <label class="field"><span>Auxiliar vinculado (destaca "minha escala")</span><select id="u-aux"></select></label>
     <label class="field"><span id="u-senha-l">Senha</span><input id="u-senha" type="text" autocomplete="off" autocapitalize="none"></label>
     <label class="toggle"><input type="checkbox" id="u-ativo"> Usuário ativo</label>
+    <p class="aviso" id="u-aviso" hidden>Este usuário pediu uma nova senha. Defina uma senha acima e combine com ele.</p>
     <p class="erro" id="u-erro"></p>
     <div class="row"><button type="button" class="btn sec" id="u-cancel">Cancelar</button><button type="button" class="btn" id="u-save">Salvar</button></div>
   </form>
 </dialog>
+<dialog id="dlg-data">
+  <form method="dialog">
+    <h2 id="d-t">Data</h2>
+    <label class="field"><span>Data</span><input id="d-data" type="date"></label>
+    <label class="field"><span>Observação (ex.: Assembleia, Visita)</span><input id="d-obs" maxlength="60"></label>
+    <label class="toggle" id="d-prep-l"><input type="checkbox" id="d-prep"> Preencher com os próximos da fila</label>
+    <p class="erro" id="d-erro"></p>
+    <div class="row"><button type="button" class="btn sec" id="d-cancel">Cancelar</button><button type="button" class="btn" id="d-save">Salvar</button></div>
+    <button type="button" class="btn danger" id="d-rem" style="width:100%;margin-top:10px">Remover esta data</button>
+  </form>
+</dialog>
+<div id="upd" hidden><span>Nova versão disponível.</span><button class="btn peq" id="upd-btn">Atualizar</button></div>
 <div id="toast"></div>
 
 <script>
@@ -178,11 +218,13 @@ const store = {
   del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dataBR = iso => iso.split('-').reverse().join('/');
+const fmtQuando = q => q ? q.slice(8,10)+'/'+q.slice(5,7)+'/'+q.slice(0,4)+' '+q.slice(11,16) : '';
 const hojeIso = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 
 let token = store.get('escala_token');
 const S = { offline:false, cacheQuando:0, usuario:null, escala:[], auxiliares:[], ano:null, mes:null, soMinhas:false, tab:'escala',
-            adm:{ aux:[], usuarios:[] }, editando:null };
+            adm:{ aux:[], usuarios:[] }, editando:null, prev:null, hist:null, sis:null };
 const isAdmin = () => S.usuario && S.usuario.nivel === 'admin';
 const podeEditar = () => isAdmin() && !S.offline;
 
@@ -215,7 +257,7 @@ async function busy(btn, fn){
 /* ---------- login / sessão ---------- */
 $('#f-login').addEventListener('submit', async ev => {
   ev.preventDefault();
-  $('#l-erro').textContent = '';
+  $('#l-erro').textContent = ''; $('#l-info').textContent = '';
   const btn = $('#l-btn'); btn.disabled = true; btn.textContent = 'Entrando…';
   try {
     const r = await api('login', $('#l-user').value, $('#l-pass').value);
@@ -227,7 +269,7 @@ $('#f-login').addEventListener('submit', async ev => {
 function sair(){
   const t = token; token = null;
   if (t) api('logout', t).catch(() => {});
-  store.del('escala_token'); store.del('escala_cache'); S.usuario = null;
+  store.del('escala_token'); store.del('escala_cache'); S.usuario = null; S.prev = null; S.hist = null; S.sis = null;
   $('#app').hidden = true; $('#login').hidden = false;
 }
 let ultimaCarga = 0;
@@ -259,6 +301,12 @@ document.addEventListener('visibilitychange', () => {
   if (Date.now() - ultimaCarga < 60000 || $('#dlg').open) return;
   recarregar().then(renderTudo).catch(() => {});
 });
+$('#l-esqueci').onclick = async () => {
+  const u = $('#l-user').value.trim(); $('#l-erro').textContent = ''; $('#l-info').textContent = '';
+  if (!u){ $('#l-erro').textContent = 'Digite seu usuário acima e toque de novo em “Esqueci minha senha”.'; return; }
+  try { const r = await api('pedirNovaSenha', u); $('#l-info').textContent = r.mensagem; }
+  catch(e){ $('#l-erro').textContent = e.message; }
+};
 async function iniciar(){
   try { await recarregar(); }
   catch(e){ $('#login').hidden = false; $('#app').hidden = true; if (token) $('#l-erro').textContent = e.message; return; }
@@ -273,17 +321,18 @@ function renderNav(){
   const abas = [['escala','📅','Escala']];
   if (isAdmin()) abas.push(['aux','👥','Auxiliares'],['users','🔑','Usuários'],['gerar','🔄','Ano novo']);
   abas.push(['conta','⚙️','Conta']);
-  $('#nav').innerHTML = abas.map(([k,i,t]) => `<button data-tab="${k}" class="${S.tab===k?'on':''}"><i>${i}</i>${t}</button>`).join('');
+  const pend = isAdmin() ? S.adm.usuarios.filter(u => u.pediuSenha).length : 0;
+  $('#nav').innerHTML = abas.map(([k,i,t]) => `<button data-tab="${k}" class="${(S.tab===k || (k==='conta' && S.tab==='sistema'))?'on':''}"><i>${i}</i>${t}${k==='users' && pend ? `<em class="bolha">${pend}</em>` : ''}</button>`).join('');
 }
 $('#nav').addEventListener('click', ev => {
   const b = ev.target.closest('button'); if (!b) return;
   S.tab = b.dataset.tab; renderNav(); renderTudo(); window.scrollTo(0,0);
 });
 function renderTudo(){
-  atualizarBanner();
-  ['escala','aux','users','gerar','conta'].forEach(k => $('#v-'+k).hidden = S.tab !== k);
-  if (S.offline && ['aux','users','gerar'].includes(S.tab)){ $('#v-'+S.tab).innerHTML = '<p class="vazio">Disponível apenas com internet.</p>'; return; }
-  ({escala:renderEscala, aux:renderAux, users:renderUsers, gerar:renderGerar, conta:renderConta})[S.tab]();
+  atualizarBanner(); renderNav();
+  ['escala','aux','users','gerar','conta','sistema'].forEach(k => $('#v-'+k).hidden = S.tab !== k);
+  if (S.offline && ['aux','users','gerar','sistema'].includes(S.tab)){ $('#v-'+S.tab).innerHTML = '<p class="vazio">Disponível apenas com internet.</p>'; return; }
+  ({escala:renderEscala, aux:renderAux, users:renderUsers, gerar:renderGerar, conta:renderConta, sistema:renderSistema})[S.tab]();
 }
 
 /* ---------- ESCALA ---------- */
@@ -302,9 +351,9 @@ function cardDia(r, meu, prox, comMes){
     ? `<select class="cel" data-data="${r.data}" data-campo="oracao">${['Irmãos','Irmãs'].map(o=>`<option ${o===r.oracao?'selected':''}>${o}</option>`).join('')}</select>`
     : `<span class="v">${esc(r.oracao)}</span>`;
   return `<article class="dia ${prox?'prox':''}">
-    <div class="data"><b>${String(d).padStart(2,'0')}</b><span>${MES3[m-1]}</span>${prox?'<em>PRÓXIMO</em>':''}</div>
+    <div class="data"><b>${String(d).padStart(2,'0')}</b><span>${MES3[m-1]}</span>${prox?'<em>PRÓXIMO</em>':''}${r.obs?`<br><em class="obs">${esc(r.obs)}</em>`:''}</div>
     <div class="turmas">${cel('t1','1ª Turma')}${cel('t2','2ª Turma')}${cel('t3','3ª Turma')}</div>
-    <div class="o" style="grid-column:2"><label>Oração</label>${orac}</div>
+    <div class="o" style="grid-column:2"><label>Oração</label>${orac}${podeEditar()?`<button class="mais" data-mais="${r.data}" aria-label="Opções da data">⋯</button>`:''}</div>
   </article>`;
 }
 function renderEscala(){
@@ -324,19 +373,96 @@ function renderEscala(){
   if (!S.soMinhas) html += `<div class="chips">${meses.map(m=>`<button class="chip ${m===S.mes?'on':''}" data-mes="${m}">${MESES[m-1].slice(0,3)}</button>`).join('')}</div>`;
   html += '</div>';
   if (meu) html += `<label class="toggle"><input type="checkbox" id="so-minhas" ${S.soMinhas?'checked':''}> Mostrar só os dias em que ${esc(meu)} está escalado</label>`;
+  html += '<div class="acoes">' + (!S.soMinhas ? '<button class="btn sec peq" id="a-zap">💬 Compartilhar no WhatsApp</button>' : '') +
+    (meu ? '<button class="btn sec peq" id="a-ics">📆 Adicionar meus dias ao calendário</button>' : '') + '</div>';
 
   if (S.soMinhas){
     const mine = doAno.filter(r => [r.t1,r.t2,r.t3].includes(meu));
     html += mine.length ? mine.map(r => cardDia(r, meu, r.data===prox)).join('') : '<p class="vazio">Nenhum dia encontrado neste ano.</p>';
   } else {
-    html += `<h3 class="mes-tit">${MESES[S.mes-1]} ${S.ano}</h3>` +
+    html += `<div class="mes-linha"><h3 class="mes-tit">${MESES[S.mes-1]} ${S.ano}</h3>${podeEditar()?'<button class="btn sec peq" id="a-add">+ Data</button>':''}</div>` +
       doAno.filter(r => +r.data.slice(5,7) === S.mes).map(r => cardDia(r, meu, r.data===prox)).join('');
   }
   el.innerHTML = html;
 }
 $('#v-escala').addEventListener('click', ev => {
-  const c = ev.target.closest('.chip'); if (c){ S.mes = +c.dataset.mes; renderEscala(); }
+  const c = ev.target.closest('.chip'); if (c){ S.mes = +c.dataset.mes; renderEscala(); return; }
+  const b = ev.target.closest('button'); if (!b) return;
+  if (b.id === 'a-zap') return compartilharZap();
+  if (b.id === 'a-ics') return baixarIcs();
+  if (b.id === 'a-add') return abrirData(null);
+  if (b.dataset.mais) return abrirData(S.escala.find(r => r.data === b.dataset.mais));
 });
+
+/* ---------- WhatsApp e calendário ---------- */
+function textoMes(){
+  const rows = S.escala.filter(r => +r.data.slice(0,4) === S.ano && +r.data.slice(5,7) === S.mes);
+  const blocos = rows.map(r => { const [, m, d] = r.data.split('-');
+    return `*${d}/${m}*${r.obs ? ' (' + r.obs + ')' : ''}\n1ª Turma: ${r.t1 || '—'}\n2ª Turma: ${r.t2 || '—'}\n3ª Turma: ${r.t3 || '—'}\nOração: ${r.oracao}`; });
+  return `*ESCALA DE AUXILIARES - ${MESES[S.mes-1].toUpperCase()}/${S.ano}*\nParque Orlanda\n\n` + blocos.join('\n\n');
+}
+function compartilharZap(){ window.open('https://wa.me/?text=' + encodeURIComponent(textoMes()), '_blank'); }
+const icsEsc = t => String(t).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+const icsDobra = l => { const o = []; while (l.length > 70){ o.push(l.slice(0,70)); l = ' ' + l.slice(70); } o.push(l); return o.join('\r\n'); };
+function icsTexto(){
+  const meu = S.usuario.auxiliar, hoje = hojeIso();
+  const rows = S.escala.filter(r => r.data >= hoje && [r.t1, r.t2, r.t3].includes(meu));
+  if (!rows.length) return '';
+  const agora = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+  const L = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Escala de Auxiliares//PT-BR','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Minha escala de auxiliar'];
+  rows.forEach(r => {
+    const fim = new Date(r.data + 'T12:00:00Z'); fim.setUTCDate(fim.getUTCDate() + 1);
+    const turma = r.t1 === meu ? '1ª Turma' : r.t2 === meu ? '2ª Turma' : '3ª Turma';
+    const com = [r.t1, r.t2, r.t3].filter(n => n && n !== meu);
+    L.push('BEGIN:VEVENT', 'UID:escala-' + r.data + '-' + S.usuario.usuario + '@escala-auxiliares', 'DTSTAMP:' + agora,
+      'DTSTART;VALUE=DATE:' + r.data.replace(/-/g,''), 'DTEND;VALUE=DATE:' + fim.toISOString().slice(0,10).replace(/-/g,''),
+      'SUMMARY:' + icsEsc('Auxiliar - ' + turma + (r.obs ? ' (' + r.obs + ')' : '')),
+      'DESCRIPTION:' + icsEsc('Escala de auxiliares - Parque Orlanda\n' + turma + (com.length ? '\nCom: ' + com.join(', ') : '') + '\nOração: ' + r.oracao),
+      'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:Amanhã você está na escala de auxiliares','TRIGGER:-PT15H','END:VALARM','END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  return L.map(icsDobra).join('\r\n') + '\r\n';
+}
+async function baixarIcs(){
+  const txt = icsTexto(); if (!txt) return toast('Nenhum dia futuro encontrado.', true);
+  const arq = new File([txt], 'minha-escala.ics', { type:'text/calendar' });
+  if (/iphone|ipad|ipod/i.test(navigator.userAgent) && navigator.canShare && navigator.canShare({ files:[arq] })){
+    try { await navigator.share({ files:[arq], title:'Minha escala' }); return; } catch(e){ if (e.name === 'AbortError') return; }
+  }
+  const url = URL.createObjectURL(arq), a = document.createElement('a');
+  a.href = url; a.download = 'minha-escala.ics'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  toast('Arquivo baixado. Abra-o para adicionar ao calendário.');
+}
+
+/* ---------- datas extras (admin) ---------- */
+let dataEdit = null;
+function abrirData(r){
+  dataEdit = r ? r.data : null;
+  $('#d-t').textContent = r ? 'Data ' + dataBR(r.data) : 'Nova data';
+  $('#d-data').value = r ? r.data : ''; $('#d-data').disabled = !!r;
+  $('#d-obs').value = r ? r.obs : ''; $('#d-prep').checked = false;
+  $('#d-prep-l').hidden = !!r; $('#d-rem').hidden = !r; $('#d-erro').textContent = '';
+  $('#dlg-data').showModal();
+}
+$('#d-cancel').onclick = () => $('#dlg-data').close();
+$('#d-save').onclick = async ev => {
+  await busy(ev.target, async () => {
+    try {
+      const data = dataEdit || $('#d-data').value;
+      await api('salvarData', token, { data, obs: $('#d-obs').value, novo: !dataEdit, preencher: $('#d-prep').checked });
+      await recarregar(); S.ano = +data.slice(0,4); S.mes = +data.slice(5,7);
+      $('#dlg-data').close(); renderTudo(); toast('Salvo ✓');
+    } catch(e){ $('#d-erro').textContent = e.message; }
+  });
+};
+$('#d-rem').onclick = async ev => {
+  if (!confirm('Remover ' + dataBR(dataEdit) + ' da escala? (Dá para desfazer pelo Histórico.)')) return;
+  await busy(ev.target, async () => {
+    try { await api('removerData', token, dataEdit); await recarregar(); $('#dlg-data').close(); renderTudo(); toast('Data removida'); }
+    catch(e){ $('#d-erro').textContent = e.message; }
+  });
+};
 $('#v-escala').addEventListener('change', async ev => {
   const s = ev.target;
   if (s.id === 'sel-ano'){ S.ano = +s.value; renderEscala(); return; }
@@ -391,7 +517,7 @@ function renderUsers(){
   $('#v-users').innerHTML = `<div class="painel"><h2>Usuários</h2>
     <p>Toque em um usuário para editar, redefinir a senha ou desativar.</p>
     ${S.adm.usuarios.map(u=>`<button class="usr" data-u="${esc(u.usuario)}"><div class="n"><b>${esc(u.nome)}</b><small>${esc(u.usuario)}${u.auxiliar?' · '+esc(u.auxiliar):''}</small></div>
-      <span class="tag">${u.nivel==='admin'?'ADMIN':'USUÁRIO'}</span>${u.ativo?'':'<span class="tag off">INATIVO</span>'}</button>`).join('')}
+      <span class="tag">${u.nivel==='admin'?'ADMIN':'USUÁRIO'}</span>${u.pediuSenha?'<span class="tag" style="background:var(--me);color:var(--me-ink)">PEDIU SENHA</span>':''}${u.ativo?'':'<span class="tag off">INATIVO</span>'}</button>`).join('')}
   </div><button class="btn" id="u-novo" style="width:100%">+ Novo usuário</button>`;
 }
 function abrirUsuario(u){
@@ -402,7 +528,7 @@ function abrirUsuario(u){
   $('#u-nivel').value = u ? u.nivel : 'usuario';
   $('#u-aux').innerHTML = '<option value="">(nenhum)</option>' + S.adm.aux.map(a=>`<option ${u&&u.auxiliar===a.orig?'selected':''}>${esc(a.orig||a.nome)}</option>`).join('');
   $('#u-senha').value = ''; $('#u-senha-l').textContent = u ? 'Nova senha (deixe vazio para manter)' : 'Senha (mín. 6 caracteres)';
-  $('#u-ativo').checked = u ? u.ativo : true; $('#u-erro').textContent = '';
+  $('#u-ativo').checked = u ? u.ativo : true; $('#u-erro').textContent = ''; $('#u-aviso').hidden = !(u && u.pediuSenha);
   $('#dlg').showModal();
 }
 $('#v-users').addEventListener('click', ev => {
@@ -416,34 +542,74 @@ $('#u-save').onclick = async ev => {
       const r = await api('salvarUsuario', token, {
         usuario: $('#u-user').value, nome: $('#u-nome').value, nivel: $('#u-nivel').value,
         auxiliar: $('#u-aux').value, ativo: $('#u-ativo').checked, senha: $('#u-senha').value });
-      S.adm.usuarios = r.usuarios; $('#dlg').close(); renderUsers(); toast('Usuário salvo ✓');
+      S.adm.usuarios = r.usuarios; $('#dlg').close(); renderNav(); renderUsers(); toast('Usuário salvo ✓');
       if (S.editando === S.usuario.usuario) await recarregar();
     } catch(e){ $('#u-erro').textContent = e.message; }
   });
 };
 
 /* ---------- ANO NOVO (admin) ---------- */
+function linhaPrev(l){
+  const [, m, d] = l.data.split('-');
+  const txt = l.incluida ? `${esc(l.t1)} · ${esc(l.t2)} · ${esc(l.t3)} <small>${esc(l.oracao)}</small>` : '<i>sem reunião</i>';
+  return `<label class="prev-linha ${l.incluida ? '' : 'off'}"><input type="checkbox" data-pdata="${l.data}" ${l.incluida ? 'checked' : ''}><b>${d}/${m}</b>
+    <span>${txt}${l.extra ? ' <em class="obs">extra</em>' : ''}${l.obs ? ' <em class="obs">' + esc(l.obs) + '</em>' : ''}</span></label>`;
+}
 function renderGerar(){
-  const ult = S.escala.length ? +S.escala[S.escala.length-1].data.slice(0,4) : new Date().getFullYear()-1;
-  $('#v-gerar').innerHTML = `<div class="painel"><h2>Gerar rodízio automático</h2>
-    <p>Cria todos os domingos do ano escolhido, continuando a fila de onde o último domingo anterior parou e alternando Irmãos/Irmãs na oração. Depois você pode ajustar qualquer dia na aba Escala.</p>
-    <label class="field"><span>Ano</span><input id="g-ano" type="number" inputmode="numeric" value="${ult+1}" min="2000" max="2100"></label>
-    <button class="btn" id="g-btn" style="width:100%">Gerar escala</button></div>`;
+  const el = $('#v-gerar'), P = S.prev;
+  if (!P || !P.dados){
+    const ult = S.escala.length ? +S.escala[S.escala.length-1].data.slice(0,4) : new Date().getFullYear() - 1;
+    el.innerHTML = `<div class="painel"><h2>Gerar rodízio automático</h2>
+      <p>Escolha o ano e veja uma prévia antes de gravar. Na prévia você pode tirar domingos sem reunião (eles não gastam a vez de ninguém) e incluir datas extras.</p>
+      <label class="field"><span>Ano</span><input id="g-ano" type="number" inputmode="numeric" value="${P ? P.ano : ult + 1}" min="2000" max="2100"></label>
+      <button class="btn" id="g-prev" style="width:100%">Ver prévia</button></div>`;
+    return;
+  }
+  const d = P.dados;
+  const cont = Object.entries(d.contagem).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([n, c]) => `<span>${esc(n)} ${c}</span>`).join('');
+  el.innerHTML = `<div class="painel"><h2>Prévia de ${P.ano}</h2>
+    <p>${d.aPartirDe ? `Continua depois de ${dataBR(d.aPartirDe.data)} (último: ${esc(d.aPartirDe.t3)}).` : 'Começa do início da fila.'} Desmarque os dias sem reunião.</p>
+    ${d.existentes ? `<div class="aviso">Já existe escala de ${P.ano} (${d.existentes} datas). Ao gerar, ela será substituída. Dá para desfazer pelo Histórico.</div>` : ''}
+    <div id="prev-lista">${d.linhas.map(linhaPrev).join('')}</div>
+    <h3 class="mes-tit">Data extra (assembleia, visita…)</h3>
+    <div class="row"><input id="x-data" type="date" class="novo" min="${P.ano}-01-01" max="${P.ano}-12-31"><input id="x-obs" class="novo" placeholder="Motivo (opcional)" maxlength="60"></div>
+    <button class="btn sec" id="x-add" style="width:100%;margin-top:8px">+ Incluir data extra</button>
+    <h3 class="mes-tit">Quantas vezes cada um serve</h3><div class="cont">${cont}</div></div>
+    <div class="row"><button class="btn sec" id="g-cancel">Voltar</button><button class="btn" id="g-ok">Gerar escala</button></div>`;
+}
+async function carregarPrev(){
+  const P = S.prev; $('#v-gerar').classList.add('load');
+  try { P.dados = await api('previaAno', token, P.ano, P.excluir, P.extras); }
+  catch(e){ toast(e.message, true); if (!P.dados) S.prev = null; }
+  $('#v-gerar').classList.remove('load'); renderGerar();
 }
 $('#v-gerar').addEventListener('click', async ev => {
-  const b = ev.target.closest('#g-btn'); if (!b) return;
-  const ano = +$('#g-ano').value;
-  await busy(b, async () => {
-    try {
-      let r = await api('gerarAno', token, ano, false);
-      if (r.precisaConfirmar){
-        if (!confirm(`Já existem ${r.existentes} datas em ${ano}. Substituir tudo (inclusive ajustes manuais)?`)) return;
-        r = await api('gerarAno', token, ano, true);
-      }
-      await recarregar(); S.ano = ano; S.mes = null; S.tab = 'escala'; renderNav(); renderTudo();
-      toast(`Escala ${ano} gerada (${r.geradas} domingos) ✓`);
-    } catch(e){ toast(e.message, true); }
-  });
+  const b = ev.target.closest('button'); if (!b) return;
+  if (b.id === 'g-prev'){ S.prev = { ano: +$('#g-ano').value, excluir: [], extras: [], dados: null }; await busy(b, carregarPrev); }
+  else if (b.id === 'g-cancel'){ S.prev = null; renderGerar(); }
+  else if (b.id === 'x-add'){
+    const dt = $('#x-data').value; if (!dt) return toast('Escolha a data extra.', true);
+    if (dt.slice(0,4) !== String(S.prev.ano)) return toast('A data precisa ser de ' + S.prev.ano + '.', true);
+    S.prev.extras = S.prev.extras.filter(x => x.data !== dt).concat([{ data: dt, obs: $('#x-obs').value }]);
+    S.prev.excluir = S.prev.excluir.filter(x => x !== dt);
+    await carregarPrev();
+  } else if (b.id === 'g-ok'){
+    const P = S.prev, ex = P.dados.existentes;
+    if (ex && !confirm(`Já existem ${ex} datas em ${P.ano}. Substituir tudo (inclusive ajustes manuais)?`)) return;
+    await busy(b, async () => {
+      try {
+        const r = await api('gerarAno', token, P.ano, ex > 0, P.excluir, P.extras);
+        await recarregar(); S.prev = null; S.ano = P.ano; S.mes = null; S.tab = 'escala'; renderTudo();
+        toast(`Escala ${P.ano} gerada (${r.geradas} datas) ✓`);
+      } catch(e){ toast(e.message, true); }
+    });
+  }
+});
+$('#v-gerar').addEventListener('change', async ev => {
+  const c = ev.target; if (!c.dataset.pdata) return;
+  const P = S.prev, dt = c.dataset.pdata;
+  P.excluir = c.checked ? P.excluir.filter(x => x !== dt) : P.excluir.concat([dt]);
+  await carregarPrev();
 });
 
 /* ---------- CONTA ---------- */
@@ -461,12 +627,15 @@ function renderConta(){
     <p>Usuário: ${esc(S.usuario.usuario)} · ${isAdmin()?'Administrador':'Consulta'}</p>
     <label class="field"><span>Senha atual</span><input id="c-atual" type="password" autocomplete="current-password"></label>
     <label class="field"><span>Nova senha (mín. 6 caracteres)</span><input id="c-nova" type="password" autocomplete="new-password"></label>
-    <button class="btn" id="c-save" style="width:100%">Alterar senha</button></div>${blocoInstalar()}
-    <button class="btn danger" id="c-sair" style="width:100%">Sair</button>`;
+    <button class="btn" id="c-save" style="width:100%">Alterar senha</button></div>
+    ${isAdmin() ? '<button class="btn sec" id="c-sis" style="width:100%;margin:0 0 12px">🗂 Histórico e backup</button>' : ''}${blocoInstalar()}
+    <button class="btn danger" id="c-sair" style="width:100%">Sair</button>
+    <p class="dica" style="text-align:center;margin:14px 0 0">Versão ${esc(self.ESCALA_VERSAO || '')}</p>`;
 }
 $('#v-conta').addEventListener('click', async ev => {
   const b = ev.target.closest('button'); if (!b) return;
   if (b.id === 'c-sair') return sair();
+  if (b.id === 'c-sis') return abrirSistema();
   if (b.id === 'c-inst' && instalar){ instalar.prompt(); instalar = null; return renderConta(); }
   if (b.id === 'c-save') await busy(b, async () => {
     try { await api('alterarSenha', token, $('#c-atual').value, $('#c-nova').value);
@@ -475,8 +644,62 @@ $('#v-conta').addEventListener('click', async ev => {
   });
 });
 
+/* ---------- HISTÓRICO E BACKUP (admin) ---------- */
+async function abrirSistema(){
+  S.tab = 'sistema'; S.hist = null; S.sis = null; renderTudo(); window.scrollTo(0,0);
+  try { const [h, s2] = await Promise.all([api('historico', token), api('sistema', token)]); S.hist = h.itens; S.sis = s2; }
+  catch(e){ toast(e.message, true); S.hist = S.hist || []; }
+  renderSistema();
+}
+function renderSistema(){
+  const s2 = S.sis, h = S.hist;
+  const bk = !s2 ? '<p>Carregando…</p>' : `<p>Último backup: <b>${s2.ultimoBackup ? fmtQuando(s2.ultimoBackup) : 'nenhum ainda'}</b><br>
+      Backup automático semanal: <b>${s2.gatilhoAtivo === true ? 'ativo' : s2.gatilhoAtivo === false ? 'desativado' : 'não verificado'}</b> · guarda as últimas ${s2.manter} cópias no seu Google Drive.</p>
+      ${s2.gatilhoAtivo === false ? '<p class="dica">Para ativar o automático, rode a função ativarBackupSemanal uma vez no editor do Apps Script.</p>' : ''}
+      <button class="btn" id="s-backup" style="width:100%">Fazer backup agora</button>`;
+  const lista = !h ? '<p>Carregando…</p>' : h.length ? '<ul class="hist">' + h.map(i => `<li class="${i.desfeito ? 'desfeito' : ''}"><div>
+      <small>${fmtQuando(i.quando)} · ${esc(i.usuario)}</small><b>${esc(i.acao)}</b>: ${esc(i.detalhe)}${i.desfeito ? ' <em class="obs">desfeito</em>' : ''}</div>
+      ${i.desfazivel ? `<button class="btn sec peq" data-des="${esc(i.id)}">Desfazer</button>` : ''}</li>`).join('') + '</ul>' : '<p class="vazio">Nada registrado ainda.</p>';
+  $('#v-sistema').innerHTML = `<button class="link" id="s-voltar" style="text-align:left;padding-left:2px">← Voltar para Conta</button>
+    <div class="painel"><h2>Cópia de segurança</h2>${bk}</div>
+    <div class="painel"><h2>Histórico de alterações</h2><p>Últimas 100 alterações. “Desfazer” volta uma mudança específica.</p>${lista}</div>`;
+}
+$('#v-sistema').addEventListener('click', async ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  if (b.id === 's-voltar'){ S.tab = 'conta'; renderTudo(); return; }
+  if (b.id === 's-backup') return busy(b, async () => {
+    try { S.sis = await api('backupAgora', token); const h = await api('historico', token); S.hist = h.itens; renderSistema(); toast('Backup criado ✓'); }
+    catch(e){ toast(e.message, true); }
+  });
+  if (b.dataset.des){
+    if (!confirm('Desfazer esta alteração?')) return;
+    await busy(b, async () => {
+      try { await api('desfazer', token, b.dataset.des); await recarregar(); const h = await api('historico', token); S.hist = h.itens; renderSistema(); toast('Alteração desfeita ✓'); }
+      catch(e){ toast(e.message, true); }
+    });
+  }
+});
+
 /* ---------- início ---------- */
-if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+let swReg = null, querAtualizar = false;
+function mostrarAtualizacao(w){
+  $('#upd').hidden = false;
+  $('#upd-btn').onclick = () => { querAtualizar = true; $('#upd-btn').disabled = true; w.postMessage('SKIP_WAITING'); };
+}
+if ('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (querAtualizar) location.reload(); });
+  window.addEventListener('load', async () => {
+    try {
+      swReg = await navigator.serviceWorker.register('sw.js');
+      if (swReg.waiting && navigator.serviceWorker.controller) mostrarAtualizacao(swReg.waiting);
+      swReg.addEventListener('updatefound', () => {
+        const novo = swReg.installing; if (!novo) return;
+        novo.addEventListener('statechange', () => { if (novo.state === 'installed' && navigator.serviceWorker.controller) mostrarAtualizacao(novo); });
+      });
+    } catch(e){}
+  });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && swReg) swReg.update().catch(() => {}); });
+}
 if (token) iniciar(); else $('#login').hidden = false;
 </script>
 </body>
